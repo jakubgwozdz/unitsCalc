@@ -14,7 +14,7 @@ class ExpressionParser {
     fun parse(data: String): Expression {
         val tokens: MutableList<Token> = tokenize(data)
         val expression: Expression = ParserProcess(tokens).process()
-        return expression
+        return if (expression is Brackets) expression.expression else expression
     }
 
     fun tokenize(data: String): MutableList<Token> {

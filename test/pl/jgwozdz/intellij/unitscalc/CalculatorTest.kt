@@ -161,42 +161,43 @@ class ParseProcessTest {
 }
 
 class CalclulatorTest {
-    val calculator = Calculator(ExpressionParser(), ExpressionFormatter())
+    val formatter = ExpressionFormatter()
+    val calculator = Calculator(ExpressionParser(), formatter)
 
     @Test fun simpleMeasurement() {
         val expression = calculator.analyze("-123.4567in")
         val result = calculator.calulate(expression, "in")
-        assertThat(result, equalTo("-123.457in"))
+        assertThat(formatter.format(result), equalTo("-123.457in"))
     } 
 
     @Test fun largeFlatExpression() {
         val expression = calculator.analyze("1cm+-2cm-3cm+3.5cm")
         val result = calculator.calulate(expression, "cm")
-        assertThat(result, equalTo("-0.5cm"))
+        assertThat(formatter.format(result), equalTo("-0.5cm"))
     } 
 
     @Test fun largeFlatExpressionCmToMm() {
         val expression = calculator.analyze("1cm+-2cm-3cm+3.5cm")
         val result = calculator.calulate(expression, "mm")
-        assertThat(result, equalTo("-5mm"))
+        assertThat(formatter.format(result), equalTo("-5mm"))
     } 
 
     @Test fun mixedExpression() {
         val expression = calculator.analyze("1in+1cm")
         val result = calculator.calulate(expression, "mm")
-        assertThat(result, equalTo("35.4mm"))
+        assertThat(formatter.format(result), equalTo("35.4mm"))
     } 
 
     @Test fun complicatedExpression() {
         val expression = calculator.analyze("  -123.457mm+ .1cm+ -.1cm - (( ( 4cm --1cm)) -(0.457mm ) )  ")
         val result = calculator.calulate(expression, "mm")
-        assertThat(result, equalTo("-173mm"))
+        assertThat(formatter.format(result), equalTo("-173mm"))
 
     } 
 
     @Test fun complicatedExpressionToIn() {
         val expression = calculator.analyze("  -123.457mm+ .1cm+ -.1cm - (( ( 4cm --1cm)) -(0.457mm ) )  ")
         val result = calculator.calulate(expression, "in")
-        assertThat(result, equalTo("-6.811in"))
+        assertThat(formatter.format(result), equalTo("-6.811in"))
     } 
 }

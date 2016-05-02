@@ -12,6 +12,7 @@ public class CalcToolWindow {
     private JComboBox unitsCombo;
     private JTextField outputField;
     private JTable historyTable;
+    private JLabel label;
 
     public JPanel getCalcWindowPanel() {
         return calcWindowPanel;
@@ -31,5 +32,9 @@ public class CalcToolWindow {
 
     public JTable getHistoryTable() {
         return historyTable;
+    }
+
+    public JLabel getLabel() {
+        return label;
     }
 }
