@@ -31,9 +31,9 @@
 
   <actions>
     <!-- Add your actions here -->
-    <action id="UnitsCalc.KotlinAction" class="pl.jgwozdz.intellij.unitscalc.action.KotlinAction" text="Kotlin Action" description="fafafa">
-      <add-to-group group-id="MainMenu" anchor="after" relative-to-action="WindowMenu"/>
-    </action>
+    <!--<action id="UnitsCalc.KotlinAction" class="pl.jgwozdz.intellij.unitscalc.action.KotlinAction" text="Kotlin Action" description="fafafa">-->
+      <!--<add-to-group group-id="MainMenu" anchor="after" relative-to-action="WindowMenu"/>-->
+    <!--</action>-->
   </actions>
 
 </idea-plugin>
