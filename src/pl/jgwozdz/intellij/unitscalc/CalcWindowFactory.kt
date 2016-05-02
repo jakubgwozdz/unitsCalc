@@ -15,7 +15,7 @@ class CalcWindowFactory : ToolWindowFactory {
 
     var toolWindow: ToolWindow? = null
     val calcWindow : CalcToolWindow = CalcToolWindow()
-    val calculator : Calculator = Calculator()
+    val calculator : Calculator = Calculator(ExpressionParser(), ExpressionFormatter())
     val historyTableModel = object : DefaultTableModel(0, 2) {
         override fun isCellEditable(row: Int, column: Int): Boolean {
             return false
