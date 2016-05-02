@@ -70,12 +70,32 @@ class TokenizeProcessTest {
         assertThat((tokens[1] as ExpressionParser.UnitsToken).value, equalTo(Units.IN))
     } 
 
+    @Test fun largeFlatExpression() {
+        val tokens = parser.tokenize("1cm + 2cm - 3cm + 4cm")
+        assertThat(tokens.size, equalTo(11))
+        val i = tokens.iterator()
+        assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("1")))
+        assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
+        assertThat(i.next() as ExpressionParser.Plus, anything())
+        assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("2")))
+        assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
+        assertThat(i.next() as ExpressionParser.Minus, anything())
+        assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("3")))
+        assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
+        assertThat(i.next() as ExpressionParser.Plus, anything())
+        assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("4")))
+        assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
+    } 
+
     @Test fun complicatedExpression() {
-        val tokens = parser.tokenize("  -123.4567mm+ -.1cm - (( ( 4cm --1cm)) -0.4567mm )  ")
+        val tokens = parser.tokenize("  -123.4567mm+ .1cm+ -.1cm - (( ( 4cm --1cm)) -(0.4567mm ) )  ")
 //        assertThat(tokens.size, equalTo(2)) 
         val i = tokens.iterator()
         assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("-123.4567")))
         assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.MM))
+        assertThat(i.next() as ExpressionParser.Plus, anything())
+        assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("0.1")))
+        assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
         assertThat(i.next() as ExpressionParser.Plus, anything())
         assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("-0.1")))
         assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.CM))
@@ -91,10 +111,51 @@ class TokenizeProcessTest {
         assertThat(i.next() as ExpressionParser.CloseBracket, anything())
         assertThat(i.next() as ExpressionParser.CloseBracket, anything())
         assertThat(i.next() as ExpressionParser.Minus, anything())
+        assertThat(i.next() as ExpressionParser.OpenBracket, anything())
         assertThat((i.next() as ExpressionParser.NumberToken).value, equalTo(BigDecimal("0.4567")))
         assertThat((i.next() as ExpressionParser.UnitsToken).value, equalTo(Units.MM))
         assertThat(i.next() as ExpressionParser.CloseBracket, anything())
+        assertThat(i.next() as ExpressionParser.CloseBracket, anything())
         
         assertFalse(i.hasNext())
+    } 
+}
+
+class ParseProcessTest {
+    val parser = ExpressionParser();
+
+    @Test(expected = Exception::class) fun failOnNoUnits() {
+        parser.parse("123")
+    } 
+
+    @Test fun simpleMeasurement() {
+        val expression = parser.parse("-123.4567in")
+        assertThat((expression as Measurement).amount, equalTo(BigDecimal("-123.4567")))
+        assertThat(expression.units, equalTo(Units.IN))
+    } 
+
+    @Test fun largeFlatExpression() {
+        val expression = parser.parse("1cm+-2cm-3cm+4cm")
+        val addition3 = expression as Addition
+        val subtraction2 = addition3.term1 as Subtraction
+        val addition1 = subtraction2.term1 as Addition
+        val v1 = addition1.term1 as Measurement
+        val v2 = addition1.term2 as Measurement
+        val v3 = subtraction2.term2 as Measurement
+        val v4 = addition3.term2 as Measurement
+        assertThat(v1.amount, equalTo(BigDecimal("1")))
+        assertThat(v2.amount, equalTo(BigDecimal("-2")))
+        assertThat(v3.amount, equalTo(BigDecimal("3")))
+        assertThat(v4.amount, equalTo(BigDecimal("4")))
+    } 
+
+    @Test fun complicatedExpression() {
+        val expression = parser.parse("  -123.457mm+ .1cm+ -.1cm - (( ( 4cm --1cm)) -(0.457mm ) )  ")
+        val formatted = ExpressionFormatter().format(expression)
+        assertThat(formatted, equalTo("-123.457mm + 0.1cm + (-0.1cm) - ((4cm - (-1cm)) - 0.457mm)"))
+        val expressionRecheck = parser.parse(formatted)
+        val formattedRecheck = ExpressionFormatter().format(expression)
+        assertThat(formattedRecheck, equalTo("-123.457mm + 0.1cm + (-0.1cm) - ((4cm - (-1cm)) - 0.457mm)"))
+        assertEquals(expression, expressionRecheck)
     } 
 }
