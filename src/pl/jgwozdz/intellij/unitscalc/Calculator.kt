@@ -90,23 +90,46 @@ class ExpressionParser {
                     Character.isWhitespace(c) -> {
                     }
                     c == '(' -> {
-                        tokens.add(OpenBracket())
+                        tokens.add(OpenBracket()); state = TokienizerState.START
                     }
-                    Character.isDigit(c) || c == '-' -> {
-                        value.append(c); state = TokienizerState.INNUMBERBEFOREDOT
+                    c == '-' -> {
+                        value.append(c); state = TokienizerState.IN_NUMBER_JUST_AFTER_MINUS
+                    }
+                    Character.isDigit(c) -> {
+                        value.append(c); state = TokienizerState.IN_NUMBER_BEFORE_DOT
                     }
                     c == '.' -> {
-                        value.append(c) ; state = TokienizerState.INNUMBERAFTERDOT
+                        value.append(c) ; state = TokienizerState.IN_NUMBER_AFTER_DOT
                     }
                     else -> throw ParseException(data, 0)
                 }
-
+                TokienizerState.IN_NUMBER_JUST_AFTER_MINUS -> when {
+                    Character.isDigit(c) -> {
+                        value.append(c) ; state = TokienizerState.IN_NUMBER_BEFORE_DOT
+                    }
+                    c == '.' -> {
+                        value.append(c) ; state = TokienizerState.IN_NUMBER_AFTER_DOT
+                    }
+                    else -> throw ParseException(data, 0)
+                }
+                TokienizerState.IN_NUMBER_BEFORE_DOT -> when {
+                    Character.isWhitespace(c) -> { // TODO : unfinished
+                        tokens.add(NumberToken(BigDecimal(value.toString()))); value = StringBuilder(); state = TokienizerState.AFTER_NUMBER
+                    }
+                    Character.isDigit(c) -> {
+                        value.append(c) ; state = TokienizerState.IN_NUMBER_BEFORE_DOT
+                    }
+                    c == '.' -> {
+                        value.append(c) ; state = TokienizerState.IN_NUMBER_AFTER_DOT
+                    }
+                    else -> throw ParseException(data, 0)
+                }
             }
         }
         return tokens
     }
 
-    enum class TokienizerState {START, INNUMBERBEFOREDOT, INNUMBERAFTERDOT, AFTERNUMBER, INUNITS, AFTERUNITS }
+    enum class TokienizerState {START, IN_NUMBER_JUST_AFTER_MINUS, IN_NUMBER_BEFORE_DOT, IN_NUMBER_AFTER_DOT, IN_NUMBER_JUST_AFTER_DOT, AFTER_NUMBER, IN_UNITS, AFTER_UNITS }
 
     interface Token
     class OpenBracket : Token
